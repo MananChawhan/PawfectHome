@@ -9,29 +9,43 @@ const fadeUp = {
 export default function PetCard({ pet }) {
   return (
     <motion.div
-      className="bg-white rounded-2xl shadow hover:shadow-xl hover:scale-105 transition flex flex-col"
+      className="bg-white rounded-2xl shadow-md hover:shadow-xl hover:scale-105 transition flex flex-col overflow-hidden"
       variants={fadeUp}
     >
+      {/* Pet Image */}
       <img
-        src={pet.image}
-        alt={pet.name}
-        className="w-full h-48 object-cover rounded-t-2xl"
+        src={pet.image || "https://placehold.co/600x400?text=No+Image"}
+        alt={pet.name || "Pet"}
+        className="w-full h-56 object-cover"
       />
-      <div className="p-4 flex flex-col flex-grow space-y-3">
+
+      {/* Pet Info */}
+      <div className="p-5 flex flex-col flex-grow space-y-3 text-gray-800">
+        {/* Name + Type */}
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-extrabold">{pet.name}</h3>
-          <span className="px-2 py-1 text-xs font-semibold bg-orange-100 text-orange-600 rounded-full">
+          <h3 className="text-lg font-extrabold text-gray-900">{pet.name}</h3>
+          <span className="px-3 py-1 text-xs font-bold bg-orange-600 text-white rounded-full">
             {pet.type}
           </span>
         </div>
+
+        {/* Breed */}
         <p className="text-sm text-gray-600">{pet.breed}</p>
+
+        {/* Age + Gender */}
         <div className="flex items-center justify-between text-sm font-semibold text-gray-700">
-          <span>Age: {pet.age}</span>
-          <span>Gender: {pet.gender}</span>
+          <span className="px-2 py-0.5 rounded bg-green-100 text-green-700">
+            Age: {pet.age}
+          </span>
+          <span className="px-2 py-0.5 rounded bg-blue-100 text-blue-700">
+            {pet.gender}
+          </span>
         </div>
+
+        {/* Button */}
         <Link
-          to={`/adopt/${pet.id}`}
-          className="mt-3 px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg shadow hover:scale-105 transition text-center"
+          to={`/adopt/${pet._id}`}
+          className="mt-4 px-4 py-2 bg-orange-600 text-white text-sm font-semibold rounded-lg shadow hover:bg-orange-700 hover:scale-105 transition text-center"
         >
           View & Adopt
         </Link>

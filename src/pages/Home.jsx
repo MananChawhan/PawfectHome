@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import pets from "../data/pets.json"
-import PetCard from "../components/PetCard.jsx"
+import PetCard from "../components/PetCard.jsx";
+
 // Animation Variants
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -27,6 +27,27 @@ export default function Home() {
   const [selectedService, setSelectedService] = useState(null);
   const [city, setCity] = useState("");
   const [date, setDate] = useState("");
+
+  // 🐾 Fetch pets from backend
+  const [pets, setPets] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchPets() {
+      try {
+        const res = await fetch("http://localhost:5000/api/pets");
+        const data = await res.json();
+        setPets(data);
+      } catch (err) {
+        console.error("Error fetching pets:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchPets();
+  }, []);
+
+  const featuredPets = pets.slice(0, 4);
 
   const services = [
     { title: "Pet Grooming", desc: "Book In-Home Cat and Dog Grooming Service", icon: "🛁" },
@@ -59,9 +80,6 @@ export default function Home() {
         "https://images.unsplash.com/photo-1592194996308-7b43878e84a6?w=400&auto=format&fit=crop",
     },
   ];
-
-const featuredPets = pets.slice(0, 4)
-
 
   const bgImage =
     "https://images.unsplash.com/photo-1535722339661-7f22185bc7ca?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0";
@@ -244,34 +262,38 @@ const featuredPets = pets.slice(0, 4)
         >
           Featured Pets
         </motion.h2>
-        <motion.div
-          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6"
-          variants={fadeUp}
-        >
-          {featuredPets.map((pet) => (
-            <motion.div
-              key={pet.name}
-              className="bg-white rounded-2xl shadow hover:shadow-xl hover:scale-105 transition"
-              variants={fadeUp}
-            >
-              <img
-                src={pet.image}
-                alt={pet.name}
-                className="w-full h-48 object-cover rounded-t-2xl"
-              />
-              <div className="p-4 text-center">
-                <h3 className="font-bold text-lg">{pet.name}</h3>
-                <p className="text-sm text-gray-500">{pet.breed}</p>
-                <Link
-                  to="/pets"
-                  className="inline-block mt-3 px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg shadow hover:scale-105 transition"
-                >
-                  Adopt Me
-                </Link>
-              </div>
-            </motion.div>
-          ))}
-        </motion.div>
+        {loading ? (
+          <p className="text-center">Loading pets...</p>
+        ) : (
+          <motion.div
+            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6"
+            variants={fadeUp}
+          >
+            {featuredPets.map((pet) => (
+              <motion.div
+                key={pet._id}
+                className="bg-white rounded-2xl shadow hover:shadow-xl hover:scale-105 transition"
+                variants={fadeUp}
+              >
+                <img
+                  src={pet.image}
+                  alt={pet.name}
+                  className="w-full h-48 object-cover rounded-t-2xl"
+                />
+                <div className="p-4 text-center">
+                  <h3 className="font-bold text-lg">{pet.name}</h3>
+                  <p className="text-sm text-gray-500">{pet.breed}</p>
+                  <Link
+                    to={`/adopt/${pet._id}`}
+                    className="inline-block mt-3 px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg shadow hover:scale-105 transition"
+                  >
+                    Adopt Me
+                  </Link>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
       </motion.section>
 
       {/* Testimonials */}
