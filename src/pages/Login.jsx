@@ -1,31 +1,53 @@
-import { useState } from 'react'
-import { motion } from 'framer-motion'
-import { Link } from 'react-router-dom'
+import { useState } from "react"
+import { motion } from "framer-motion"
+import { Link, useNavigate } from "react-router-dom"
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: 'easeOut' } },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
 }
 
 export default function Login() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState(false)
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [error, setError] = useState("")
+  const [loading, setLoading] = useState(false)
+  const navigate = useNavigate()
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault()
     if (!email || !password) {
-      setError('Please fill in all fields')
+      setError("Please fill in all fields")
       return
     }
-    setError('')
-    setSuccess(true)
 
-    setEmail('')
-    setPassword('')
+    try {
+      setLoading(true)
+      setError("")
 
-    setTimeout(() => setSuccess(false), 3000)
+      const res = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      })
+
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.message || "Login failed")
+
+      // ✅ Save token & role
+      localStorage.setItem("token", data.token)
+      localStorage.setItem("role", data.role)
+
+      if (data.role === "admin") {
+        navigate("/admin")
+      } else {
+        navigate("/")
+      }
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -37,45 +59,42 @@ export default function Login() {
     >
       <motion.div className="text-center" variants={fadeUp}>
         <h2 className="text-3xl md:text-4xl font-extrabold">Login</h2>
-        <p className="text-gray-600 mt-2">
-          Enter your credentials to access your account.
-        </p>
+        <p className="text-gray-600 mt-2">Enter your credentials to access your account.</p>
       </motion.div>
 
-      <motion.div className="bg-white rounded-2xl shadow p-6 md:p-10 space-y-4 border-2 border-black" variants={fadeUp}>
+      <motion.div
+        className="bg-white rounded-2xl shadow p-6 md:p-10 space-y-4 border-2 border-black"
+        variants={fadeUp}
+      >
         <form onSubmit={handleLogin} className="space-y-4">
           <input
             type="email"
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
+            className="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-orange-400"
           />
           <input
             type="password"
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
+            className="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-orange-400"
           />
 
           {error && <p className="text-red-500 text-sm">{error}</p>}
-          {success && (
-            <p className="text-green-600 font-semibold text-center flex items-center justify-center gap-2">
-              <span>✔</span> Successfully logged in!
-            </p>
-          )}
 
           <button
             type="submit"
-            className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-xl shadow transition"
+            disabled={loading}
+            className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-xl transition disabled:opacity-50"
           >
-            Login
+            {loading ? "Logging in..." : "Login"}
           </button>
         </form>
 
         <p className="text-center text-gray-700 mt-4">
-          Don’t have an account?{' '}
+          Don’t have an account?{" "}
           <Link to="/signup" className="font-bold text-orange-500 hover:underline">
             Sign Up
           </Link>
