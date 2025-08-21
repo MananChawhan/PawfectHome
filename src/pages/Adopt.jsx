@@ -19,7 +19,7 @@ export default function Adopt() {
   useEffect(() => {
     async function fetchPet() {
       try {
-        const res = await fetch(`http://localhost:5000/api/pets/${id}`);
+        const res = await fetch(`https://pawfecthome-4ein.onrender.com/api/pets/${id}`);
         const data = await res.json();
         setPet(data);
       } catch (error) {

@@ -35,7 +35,7 @@ export default function AdminPage() {
 
   const fetchPets = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/pets");
+      const res = await fetch("https://pawfecthome-4ein.onrender.com/api/pets");
       const data = await res.json();
       setPets(data);
     } catch (err) {
@@ -73,7 +73,7 @@ export default function AdminPage() {
   const toDisplayImage = (img) => {
     if (!img) return "https://placehold.co/600x400?text=No+Image";
     if (img.startsWith("http")) return img;
-    return `http://localhost:5000/${img}`; // ✅ serve backend upload
+    return `https://pawfecthome-4ein.onrender.com/${img}`; // ✅ serve backend upload
   };
 
   // Submit (Create/Update) with FormData
@@ -82,8 +82,8 @@ export default function AdminPage() {
 
     try {
       const url = editId
-        ? `http://localhost:5000/api/pets/${editId}`
-        : "http://localhost:5000/api/pets";
+        ? `https://pawfecthome-4ein.onrender.com/api/pets/${editId}`
+        : "https://pawfecthome-4ein.onrender.com/api/pets";
       const method = editId ? "PUT" : "POST";
 
       const formData = new FormData();
@@ -163,7 +163,7 @@ export default function AdminPage() {
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this pet?")) return;
     try {
-      await fetch(`http://localhost:5000/api/pets/${id}`, {
+      await fetch(`https://pawfecthome-4ein.onrender.com/api/pets/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });

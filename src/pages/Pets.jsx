@@ -28,7 +28,7 @@ export default function Pets() {
   useEffect(() => {
     const fetchPets = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/pets");
+        const res = await fetch("https://pawfecthome-4ein.onrender.com/api/pets");
         const data = await res.json();
         setPets(data);
       } catch (err) {
