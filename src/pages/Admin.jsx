@@ -21,7 +21,7 @@ export default function AdminPage() {
     neutered: false,
     goodWith: [],
   });
-  const [imageFile, setImageFile] = useState(null); // ✅ new: selected file
+  const [imageFile, setImageFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [editId, setEditId] = useState(null);
   const navigate = useNavigate();
@@ -73,7 +73,7 @@ export default function AdminPage() {
   const toDisplayImage = (img) => {
     if (!img) return "https://placehold.co/600x400?text=No+Image";
     if (img.startsWith("http")) return img;
-    return `https://pawfecthome-4ein.onrender.com/${img}`; // ✅ serve backend upload
+    return `https://pawfecthome-4ein.onrender.com/${img}`;
   };
 
   // Submit (Create/Update) with FormData
@@ -97,20 +97,16 @@ export default function AdminPage() {
       formData.append("neutered", form.neutered);
       formData.append("goodWith", form.goodWith.join(","));
 
-      // only append image if a new file is selected
+      // ✅ handle both file and URL
       if (imageFile) {
         formData.append("image", imageFile);
-      } else if (!editId && form.image) {
-        // In case adding with remote URL instead of file (optional)
+      } else if (form.image) {
         formData.append("image", form.image);
       }
 
       const res = await fetch(url, {
         method,
-        headers: {
-          Authorization: `Bearer ${token}`, // optional for secured routes
-          // ❌ don't set Content-Type manually when sending FormData
-        },
+        headers: { Authorization: `Bearer ${token}` },
         body: formData,
       });
 
@@ -197,92 +193,49 @@ export default function AdminPage() {
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <input
-            type="text"
-            name="name"
-            placeholder="Name"
-            value={form.name}
-            onChange={handleChange}
-            className="w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400"
-            required
-          />
-          <input
-            type="text"
-            name="type"
-            placeholder="Type (Dog, Cat... )"
-            value={form.type}
-            onChange={handleChange}
-            className="w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400"
-            required
-          />
-          <input
-            type="text"
-            name="breed"
-            placeholder="Breed"
-            value={form.breed}
-            onChange={handleChange}
-            className="w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400"
-            required
-          />
-          <input
-            type="text"
-            name="age"
-            placeholder="Age"
-            value={form.age}
-            onChange={handleChange}
-            className="w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400"
-            required
-          />
-          <input
-            type="text"
-            name="gender"
-            placeholder="Gender"
-            value={form.gender}
-            onChange={handleChange}
-            className="w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400"
-            required
-          />
+          <input type="text" name="name" placeholder="Name" value={form.name} onChange={handleChange}
+            className="w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400" required />
+          <input type="text" name="type" placeholder="Type (Dog, Cat... )" value={form.type} onChange={handleChange}
+            className="w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400" required />
+          <input type="text" name="breed" placeholder="Breed" value={form.breed} onChange={handleChange}
+            className="w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400" required />
+          <input type="text" name="age" placeholder="Age" value={form.age} onChange={handleChange}
+            className="w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400" required />
+          <input type="text" name="gender" placeholder="Gender" value={form.gender} onChange={handleChange}
+            className="w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400" required />
         </div>
 
-        {/* Image input */}
+        {/* Image Upload + URL */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
           <div>
             <label className="block font-semibold text-gray-700 mb-2">Image Upload</label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleFileChange}
-              className="w-full px-4 py-3 border rounded-xl focus:outline-none"
-            />
+            <input type="file" accept="image/*" onChange={handleFileChange}
+              className="w-full px-4 py-3 border rounded-xl focus:outline-none" />
             <p className="text-sm text-gray-600 mt-1">
               {editId ? "Choose a new file to replace current image (optional)." : "Select an image to upload."}
             </p>
           </div>
-
           <div className="flex flex-col items-center">
             <p className="text-sm font-medium text-gray-700">Preview:</p>
             <img
-              src={
-                preview
-                  ? preview
-                  : editId && form.image
-                    ? toDisplayImage(form.image)
-                    : "https://placehold.co/120x120?text=No+Image"
-              }
-              alt="preview"
-              className="w-28 h-28 object-cover rounded-lg shadow mt-2"
-            />
+              src={preview ? preview : editId && form.image ? toDisplayImage(form.image) : "https://placehold.co/120x120?text=No+Image"}
+              alt="preview" className="w-28 h-28 object-cover rounded-lg shadow mt-2" />
           </div>
         </div>
 
-        <textarea
-          name="description"
-          placeholder="Description"
-          value={form.description}
-          onChange={handleChange}
-          className="w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400"
-          required
-        />
+        {/* Image URL input */}
+        <div>
+          <label className="block font-semibold text-gray-700 mb-2">Image URL (optional)</label>
+          <input type="text" name="image" placeholder="https://example.com/photo.jpg"
+            value={form.image} onChange={handleChange}
+            className="w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400" />
+          <p className="text-sm text-gray-600 mt-1">
+            Paste an image URL if you don’t want to upload a file.
+          </p>
+        </div>
+
+        <textarea name="description" placeholder="Description" value={form.description} onChange={handleChange}
+          className="w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400" required />
 
         <div className="flex items-center gap-6">
           <label className="flex items-center gap-2 font-semibold text-gray-700">
@@ -295,24 +248,17 @@ export default function AdminPage() {
           </label>
         </div>
 
-        <input
-          type="text"
-          name="goodWith"
-          placeholder="Good with (comma separated, e.g. Kids, Dogs, Cats)"
-          value={form.goodWith.join(", ")}
-          onChange={handleChange}
-          className="w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400"
-        />
+        <input type="text" name="goodWith" placeholder="Good with (comma separated, e.g. Kids, Dogs, Cats)"
+          value={form.goodWith.join(", ")} onChange={handleChange}
+          className="w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400" />
 
-        <button
-          type="submit"
-          className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-xl shadow transition"
-        >
+        <button type="submit"
+          className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-xl shadow transition">
           {editId ? "💾 Save Changes" : "➕ Add Pet"}
         </button>
       </motion.form>
 
-      {/* Table */}
+      {/* Pets Table */}
       <motion.div className="bg-white rounded-2xl shadow border-2 border-gray-200 p-6" variants={fadeUp}>
         <h2 className="text-2xl font-bold mb-4">📋 Current Pets</h2>
         <div className="overflow-x-auto">
@@ -331,35 +277,24 @@ export default function AdminPage() {
               {pets.map((pet) => (
                 <tr key={pet._id} className="border-b hover:bg-gray-50">
                   <td className="p-3">
-                    <img
-                      src={toDisplayImage(pet.image)}
-                      alt={pet.name}
-                      className="w-16 h-16 object-cover rounded-lg shadow"
-                    />
+                    <img src={toDisplayImage(pet.image)} alt={pet.name}
+                      className="w-16 h-16 object-cover rounded-lg shadow" />
                   </td>
                   <td className="p-3 font-semibold">{pet.name}</td>
                   <td className="p-3">{pet.type}</td>
                   <td className="p-3">{pet.breed}</td>
                   <td className="p-3">{pet.age}</td>
                   <td className="p-3 flex gap-2 justify-center">
-                    <button
-                      onClick={() => handleEdit(pet)}
-                      className="px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(pet._id)}
-                      className="px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
-                    >
-                      Delete
-                    </button>
+                    <button onClick={() => handleEdit(pet)}
+                      className="px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">Edit</button>
+                    <button onClick={() => handleDelete(pet._id)}
+                      className="px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">Delete</button>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-        </div>  
+        </div>
       </motion.div>
     </motion.section>
   );
