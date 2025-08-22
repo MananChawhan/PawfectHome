@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import { useState } from "react"
 import { motion } from "framer-motion"
 import { Link, useNavigate } from "react-router-dom"
@@ -46,13 +45,10 @@ export default function Signup() {
       localStorage.setItem("role", data.role)
 
       setSuccess(true)
-
-      // reset fields
       setName("")
       setEmail("")
       setPassword("")
 
-      // redirect after short delay
       setTimeout(() => {
         navigate(data.role === "admin" ? "/admin" : "/")
       }, 1500)
@@ -62,38 +58,6 @@ export default function Signup() {
     } finally {
       setLoading(false)
     }
-=======
-import { useState } from 'react'
-import { motion } from 'framer-motion'
-import { Link } from 'react-router-dom'
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: 'easeOut' } },
-}
-
-export default function Signup() {
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState(false)
-
-  const handleSignup = (e) => {
-    e.preventDefault()
-    if (!name || !email || !password) {
-      setError('Please fill in all fields')
-      return
-    }
-    setError('')
-    setSuccess(true)
-
-    setName('')
-    setEmail('')
-    setPassword('')
-
-    setTimeout(() => setSuccess(false), 3000)
->>>>>>> 367d50ef7bbfca873b9becd0969404d646ae0ff2
   }
 
   return (
@@ -110,47 +74,31 @@ export default function Signup() {
         </p>
       </motion.div>
 
-<<<<<<< HEAD
       <motion.div
         className="bg-white rounded-2xl shadow p-6 md:p-10 space-y-4 border-2 border-black"
         variants={fadeUp}
       >
-=======
-      <motion.div className="bg-white rounded-2xl shadow p-6 md:p-10 space-y-4 border-2 border-black" variants={fadeUp}>
->>>>>>> 367d50ef7bbfca873b9becd0969404d646ae0ff2
         <form onSubmit={handleSignup} className="space-y-4">
           <input
             type="text"
             placeholder="Full Name"
             value={name}
             onChange={(e) => setName(e.target.value)}
-<<<<<<< HEAD
-            className="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-orange-400"
-=======
             className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
->>>>>>> 367d50ef7bbfca873b9becd0969404d646ae0ff2
           />
           <input
             type="email"
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-<<<<<<< HEAD
-            className="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-orange-400"
-=======
             className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
->>>>>>> 367d50ef7bbfca873b9becd0969404d646ae0ff2
           />
           <input
             type="password"
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-<<<<<<< HEAD
-            className="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-orange-400"
-=======
             className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
->>>>>>> 367d50ef7bbfca873b9becd0969404d646ae0ff2
           />
 
           {error && <p className="text-red-500 text-sm">{error}</p>}
@@ -162,25 +110,15 @@ export default function Signup() {
 
           <button
             type="submit"
-<<<<<<< HEAD
             disabled={loading}
             className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-xl transition disabled:opacity-50"
           >
             {loading ? "Signing up..." : "Sign Up"}
-=======
-            className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-xl shadow transition"
-          >
-            Sign Up
->>>>>>> 367d50ef7bbfca873b9becd0969404d646ae0ff2
           </button>
         </form>
 
         <p className="text-center text-gray-700 mt-4">
-<<<<<<< HEAD
           Already have an account?{" "}
-=======
-          Already have an account?{' '}
->>>>>>> 367d50ef7bbfca873b9becd0969404d646ae0ff2
           <Link to="/login" className="font-bold text-orange-500 hover:underline">
             Login
           </Link>
