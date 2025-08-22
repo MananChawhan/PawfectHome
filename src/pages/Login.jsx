@@ -31,8 +31,12 @@ export default function Login() {
         body: JSON.stringify({ email, password }),
       })
 
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.message || "Login failed")
+      // prevent crash if response is not JSON
+      const data = await res.json().catch(() => ({}))
+
+      if (!res.ok) {
+        throw new Error(data.message || `Request failed: ${res.status} ${res.statusText}`)
+      }
 
       // ✅ Save token & role
       localStorage.setItem("token", data.token)
@@ -44,7 +48,8 @@ export default function Login() {
         navigate("/")
       }
     } catch (err) {
-      setError(err.message)
+      console.error("Login error:", err) // shows details in console
+      setError(err.message) // shows readable error in UI
     } finally {
       setLoading(false)
     }
