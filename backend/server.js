@@ -8,15 +8,8 @@ import authRoutes from "./routes/authRoutes.js";
 dotenv.config();
 const app = express();
 
-// ✅ CORS Configuration (allow your Vercel frontend)
-app.use(
-  cors({
-    origin: ["https://pawfecthome-liart.vercel.app"], // your Vercel frontend
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true,
-  })
-);
+// ✅ Simple CORS (allow all during dev & prod)
+app.use(cors());
 
 // Middleware
 app.use(express.json());

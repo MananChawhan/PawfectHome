@@ -1,11 +1,32 @@
 import express from "express";
 import Pet from "../models/Pet.js";
-import upload from "../middleware/upload.js"; // ✅ import multer
-import { protect, admin } from "../middleware/auth.js"; // (optional auth)
+import upload from "../middleware/upload.js";
+import { v2 as cloudinary } from "cloudinary";
 
 const router = express.Router();
 
-// ✅ GET all pets (public)
+// ✅ Cloudinary Config
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+// Helper: upload buffer to cloudinary
+const uploadToCloudinary = (fileBuffer) => {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      { folder: "pawfecthome" },
+      (error, result) => {
+        if (error) reject(error);
+        else resolve(result);
+      }
+    );
+    stream.end(fileBuffer);
+  });
+};
+
+// ✅ GET all pets
 router.get("/", async (req, res) => {
   try {
     const pets = await Pet.find();
@@ -15,7 +36,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-// ✅ GET single pet by ID (public)
+// ✅ GET single pet
 router.get("/:id", async (req, res) => {
   try {
     const pet = await Pet.findById(req.params.id);
@@ -26,13 +47,27 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// ✅ CREATE new pet (with image upload)
+// ✅ POST add pet (file OR URL)
 router.post("/", upload.single("image"), async (req, res) => {
   try {
     const {
-      name, type, breed, age, gender, description,
-      vaccinated, neutered, goodWith
+      name,
+      type,
+      breed,
+      age,
+      gender,
+      description,
+      vaccinated,
+      neutered,
+      goodWith,
+      image,
     } = req.body;
+
+    let imageUrl = image || "";
+    if (req.file) {
+      const uploaded = await uploadToCloudinary(req.file.buffer);
+      imageUrl = uploaded.secure_url;
+    }
 
     const newPet = new Pet({
       name,
@@ -41,10 +76,13 @@ router.post("/", upload.single("image"), async (req, res) => {
       age,
       gender,
       description,
-      image: req.file ? req.file.path.replace(/\\/g, "/") : "", // ✅ save path
       vaccinated: vaccinated === "true" || vaccinated === true,
       neutered: neutered === "true" || neutered === true,
-      goodWith: typeof goodWith === "string" ? goodWith.split(",").map(s => s.trim()) : (goodWith || []),
+      goodWith:
+        typeof goodWith === "string"
+          ? goodWith.split(",").map((s) => s.trim())
+          : [],
+      image: imageUrl,
     });
 
     const saved = await newPet.save();
@@ -54,37 +92,52 @@ router.post("/", upload.single("image"), async (req, res) => {
   }
 });
 
-// ✅ UPDATE pet (with optional image update)
+// ✅ PUT update pet (file OR URL)
 router.put("/:id", upload.single("image"), async (req, res) => {
   try {
     const {
-      name, type, breed, age, gender, description,
-      vaccinated, neutered, goodWith
-    } = req.body;
-
-    const updateData = {
       name,
       type,
       breed,
       age,
       gender,
       description,
-      vaccinated: vaccinated === "true" || vaccinated === true,
-      neutered: neutered === "true" || neutered === true,
-      goodWith: typeof goodWith === "string" ? goodWith.split(",").map(s => s.trim()) : (goodWith || []),
-    };
+      vaccinated,
+      neutered,
+      goodWith,
+      image,
+    } = req.body;
 
+    let imageUrl = image || "";
     if (req.file) {
-      updateData.image = req.file.path.replace(/\\/g, "/");
+      const uploaded = await uploadToCloudinary(req.file.buffer);
+      imageUrl = uploaded.secure_url;
     }
 
-    const updated = await Pet.findByIdAndUpdate(req.params.id, updateData, {
-      new: true,
-      runValidators: true,
-    });
+    const updatedPet = await Pet.findByIdAndUpdate(
+      req.params.id,
+      {
+        name,
+        type,
+        breed,
+        age,
+        gender,
+        description,
+        vaccinated: vaccinated === "true" || vaccinated === true,
+        neutered: neutered === "true" || neutered === true,
+        goodWith:
+          typeof goodWith === "string"
+            ? goodWith.split(",").map((s) => s.trim())
+            : [],
+        image: imageUrl,
+      },
+      { new: true }
+    );
 
-    if (!updated) return res.status(404).json({ message: "Pet not found" });
-    res.json(updated);
+    if (!updatedPet)
+      return res.status(404).json({ message: "Pet not found" });
+
+    res.json(updatedPet);
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
@@ -95,7 +148,7 @@ router.delete("/:id", async (req, res) => {
   try {
     const deleted = await Pet.findByIdAndDelete(req.params.id);
     if (!deleted) return res.status(404).json({ message: "Pet not found" });
-    res.json({ message: "Pet deleted successfully" });
+    res.json({ message: "Pet deleted" });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

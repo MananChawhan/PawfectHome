@@ -43,10 +43,12 @@ export default function Pets() {
   // Filter pets
   const filtered = useMemo(() => {
     return pets.filter((p) => {
-      const matchesType = type ? p.type === type : true;
+      const matchesType = type
+        ? p.type?.toLowerCase() === type.toLowerCase()
+        : true;
       const q = query.trim().toLowerCase();
       const matchesQuery = q
-        ? p.name.toLowerCase().includes(q) || p.breed.toLowerCase().includes(q)
+        ? p.name?.toLowerCase().includes(q) || p.breed?.toLowerCase().includes(q)
         : true;
       return matchesType && matchesQuery;
     });
@@ -79,7 +81,7 @@ export default function Pets() {
             <SwiperSlide key={p._id}>
               <div className="relative">
                 <img
-                  src={p.image}
+                  src={p.image || "https://placehold.co/600x400?text=No+Image"}
                   alt={p.name}
                   className="w-full h-72 object-cover"
                 />
@@ -118,7 +120,12 @@ export default function Pets() {
 
       {/* Filter Bar */}
       <motion.div variants={fadeUp}>
-        <FilterBar type={type} setType={setType} query={query} setQuery={setQuery} />
+        <FilterBar
+          type={type}
+          setType={setType}
+          query={query}
+          setQuery={setQuery}
+        />
       </motion.div>
 
       {/* Pets Grid */}
