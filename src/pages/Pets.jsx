@@ -2,10 +2,12 @@ import { useEffect, useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import PetCard from "../components/PetCard.jsx";
 import FilterBar from "../components/FilterBar.jsx";
+import { Link } from "react-router-dom";
+
 
 // Swiper v10+ imports
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation } from "swiper/modules";
+import { Navigation, Autoplay } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 
@@ -23,6 +25,7 @@ export default function Pets() {
   const [loading, setLoading] = useState(true);
   const [type, setType] = useState("");
   const [query, setQuery] = useState("");
+  const [sort, setSort] = useState("name"); // sort by name/age
 
   // Fetch pets from backend
   useEffect(() => {
@@ -40,9 +43,9 @@ export default function Pets() {
     fetchPets();
   }, []);
 
-  // Filter pets
+  // Filter + Sort pets
   const filtered = useMemo(() => {
-    return pets.filter((p) => {
+    let results = pets.filter((p) => {
       const matchesType = type
         ? p.type?.toLowerCase() === type.toLowerCase()
         : true;
@@ -52,7 +55,15 @@ export default function Pets() {
         : true;
       return matchesType && matchesQuery;
     });
-  }, [type, query, pets]);
+
+    if (sort === "name") {
+      results = results.sort((a, b) => a.name.localeCompare(b.name));
+    } else if (sort === "age") {
+      results = results.sort((a, b) => (a.age || 0) - (b.age || 0));
+    }
+
+    return results;
+  }, [type, query, pets, sort]);
 
   // Stats
   const totalPets = pets.length;
@@ -71,7 +82,7 @@ export default function Pets() {
       {/* Hero Carousel */}
       <motion.div variants={fadeUp}>
         <Swiper
-          modules={[Navigation]}
+          modules={[Navigation, Autoplay]}
           navigation
           loop
           autoplay={{ delay: 4000 }}
@@ -97,7 +108,7 @@ export default function Pets() {
 
       {/* Stats */}
       <motion.div
-        className="flex justify-center gap-6 text-center"
+        className="flex justify-center gap-6 text-center flex-wrap"
         variants={fadeUp}
       >
         <div className="bg-yellow-100 px-6 py-4 rounded-xl font-semibold shadow">
@@ -118,14 +129,25 @@ export default function Pets() {
         </div>
       </motion.div>
 
-      {/* Filter Bar */}
-      <motion.div variants={fadeUp}>
+      {/* Filter + Sort Bar */}
+      <motion.div
+        className="flex flex-col sm:flex-row justify-between items-center gap-4"
+        variants={fadeUp}
+      >
         <FilterBar
           type={type}
           setType={setType}
           query={query}
           setQuery={setQuery}
         />
+        <select
+          value={sort}
+          onChange={(e) => setSort(e.target.value)}
+          className="border rounded-lg px-3 py-2 shadow"
+        >
+          <option value="name">Sort by Name</option>
+          <option value="age">Sort by Age</option>
+        </select>
       </motion.div>
 
       {/* Pets Grid */}
@@ -134,15 +156,29 @@ export default function Pets() {
         variants={stagger}
       >
         {loading ? (
-          <p className="col-span-full text-center">Loading pets...</p>
+          [...Array(6)].map((_, i) => (
+            <div
+              key={i}
+              className="bg-gray-200 animate-pulse h-60 rounded-2xl"
+            />
+          ))
         ) : filtered.length > 0 ? (
           filtered.map((p) => (
             <motion.div
               key={p._id}
               variants={fadeUp}
-              className="bg-white rounded-2xl shadow hover:shadow-xl hover:scale-105 transition"
+              whileHover={{ scale: 1.03 }}
+              className="bg-white rounded-2xl shadow transition relative"
             >
               <PetCard pet={p} />
+              {/* Adopt Button */}
+              <button
+  className="absolute bottom-3 right-3 bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-lg shadow"
+>
+  <Link to={`/adopt/${p._id}`} className="block">
+    Adopt Me
+  </Link>
+</button>
             </motion.div>
           ))
         ) : (
