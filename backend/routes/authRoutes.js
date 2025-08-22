@@ -4,6 +4,7 @@ import User from "../models/User.js";
 
 const router = express.Router();
 
+<<<<<<< HEAD
 /**
  * @route   POST /api/auth/signup
  * @desc    Register new user (defaults to role: "user")
@@ -55,6 +56,9 @@ router.post("/signup", async (req, res) => {
  * @route   GET /api/auth/seed-admin
  * @desc    Seed admin account (run only once)
  */
+=======
+// ✅ Seed Admin (plain text password)
+>>>>>>> 367d50ef7bbfca873b9becd0969404d646ae0ff2
 router.get("/seed-admin", async (req, res) => {
   try {
     const existingAdmin = await User.findOne({ email: process.env.ADMIN_EMAIL });
@@ -63,7 +67,10 @@ router.get("/seed-admin", async (req, res) => {
     }
 
     const adminUser = new User({
+<<<<<<< HEAD
       name: "Admin",
+=======
+>>>>>>> 367d50ef7bbfca873b9becd0969404d646ae0ff2
       email: process.env.ADMIN_EMAIL,
       password: process.env.ADMIN_PASSWORD, // plain text
       role: "admin",
@@ -76,6 +83,7 @@ router.get("/seed-admin", async (req, res) => {
   }
 });
 
+<<<<<<< HEAD
 /**
  * @route   POST /api/auth/login
  * @desc    Login user or admin
@@ -89,17 +97,29 @@ router.post("/login", async (req, res) => {
       return res.status(400).json({ message: "Please provide email and password" });
     }
 
+=======
+// ✅ Login Route (plain text compare)
+router.post("/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+>>>>>>> 367d50ef7bbfca873b9becd0969404d646ae0ff2
     const user = await User.findOne({ email });
 
     if (!user || user.password !== password) {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
+<<<<<<< HEAD
     const token = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
+=======
+    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
+      expiresIn: "7d",
+    });
+>>>>>>> 367d50ef7bbfca873b9becd0969404d646ae0ff2
 
     res.json({
       token,
