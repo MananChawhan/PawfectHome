@@ -31,25 +31,30 @@ export default function Login() {
         body: JSON.stringify({ email, password }),
       })
 
-      // prevent crash if response is not JSON
       const data = await res.json().catch(() => ({}))
 
       if (!res.ok) {
         throw new Error(data.message || `Request failed: ${res.status} ${res.statusText}`)
       }
 
-      // ✅ Save token & role
+      // ✅ Save all details
       localStorage.setItem("token", data.token)
       localStorage.setItem("role", data.role)
+      localStorage.setItem("email", data.email)
+      if (data.name) localStorage.setItem("name", data.name) // backend should send this
 
+      // 🚀 Tell Navbar avatar to refresh immediately
+      window.dispatchEvent(new Event("userChanged"))
+
+      // ✅ Redirect based on role
       if (data.role === "admin") {
         navigate("/admin")
       } else {
         navigate("/")
       }
     } catch (err) {
-      console.error("Login error:", err) // shows details in console
-      setError(err.message) // shows readable error in UI
+      console.error("Login error:", err)
+      setError(err.message)
     } finally {
       setLoading(false)
     }

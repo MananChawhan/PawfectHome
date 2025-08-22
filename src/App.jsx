@@ -10,6 +10,8 @@ import Login from './pages/Login.jsx'
 import Signup from './pages/Signup.jsx'
 import Admin from './pages/Admin.jsx'
 import ProtectedRoute from './components/ProtectedRoute.jsx'
+import Profile from './pages/Profile.jsx'
+import AddAdmin from './pages/AddAdmin.jsx'
 
 export default function App() {
   return (
@@ -20,6 +22,8 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/pets" element={<Pets />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/add-admin" element={<AddAdmin />} />
           <Route
             path="/admin"
             element={

@@ -1,7 +1,9 @@
+// routes/petRoutes.js
 import express from "express";
 import Pet from "../models/Pet.js";
 import upload from "../middleware/upload.js";
 import { v2 as cloudinary } from "cloudinary";
+import { protect, admin } from "../middleware/auth.js";
 
 const router = express.Router();
 
@@ -26,6 +28,18 @@ const uploadToCloudinary = (fileBuffer) => {
   });
 };
 
+// Helper: extract Cloudinary public_id from URL
+const getPublicIdFromUrl = (url) => {
+  try {
+    const parts = url.split("/");
+    const fileWithExt = parts[parts.length - 1]; // e.g. abc123.jpg
+    const publicId = fileWithExt.split(".")[0]; // abc123
+    return "pawfecthome/" + publicId; // add folder
+  } catch {
+    return null;
+  }
+};
+
 // ✅ GET all pets
 router.get("/", async (req, res) => {
   try {
@@ -47,8 +61,8 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// ✅ POST add pet (file OR URL)
-router.post("/", upload.single("image"), async (req, res) => {
+// ✅ POST add pet (file OR URL) — only admin
+router.post("/", protect, admin, upload.single("image"), async (req, res) => {
   try {
     const {
       name,
@@ -92,8 +106,8 @@ router.post("/", upload.single("image"), async (req, res) => {
   }
 });
 
-// ✅ PUT update pet (file OR URL)
-router.put("/:id", upload.single("image"), async (req, res) => {
+// ✅ PUT update pet (file OR URL) — only admin
+router.put("/:id", protect, admin, upload.single("image"), async (req, res) => {
   try {
     const {
       name,
@@ -108,47 +122,60 @@ router.put("/:id", upload.single("image"), async (req, res) => {
       image,
     } = req.body;
 
-    let imageUrl = image || "";
+    const pet = await Pet.findById(req.params.id);
+    if (!pet) return res.status(404).json({ message: "Pet not found" });
+
+    let imageUrl = image || pet.image;
+
     if (req.file) {
+      // Upload new file
       const uploaded = await uploadToCloudinary(req.file.buffer);
       imageUrl = uploaded.secure_url;
+
+      // Delete old Cloudinary image if it exists
+      if (pet.image && pet.image.includes("res.cloudinary.com")) {
+        const publicId = getPublicIdFromUrl(pet.image);
+        if (publicId) await cloudinary.uploader.destroy(publicId);
+      }
     }
 
-    const updatedPet = await Pet.findByIdAndUpdate(
-      req.params.id,
-      {
-        name,
-        type,
-        breed,
-        age,
-        gender,
-        description,
-        vaccinated: vaccinated === "true" || vaccinated === true,
-        neutered: neutered === "true" || neutered === true,
-        goodWith:
-          typeof goodWith === "string"
-            ? goodWith.split(",").map((s) => s.trim())
-            : [],
-        image: imageUrl,
-      },
-      { new: true }
-    );
+    pet.name = name ?? pet.name;
+    pet.type = type ?? pet.type;
+    pet.breed = breed ?? pet.breed;
+    pet.age = age ?? pet.age;
+    pet.gender = gender ?? pet.gender;
+    pet.description = description ?? pet.description;
+    pet.vaccinated = vaccinated === "true" || vaccinated === true;
+    pet.neutered = neutered === "true" || neutered === true;
+    pet.goodWith =
+      typeof goodWith === "string"
+        ? goodWith.split(",").map((s) => s.trim())
+        : pet.goodWith;
+    pet.image = imageUrl;
 
-    if (!updatedPet)
-      return res.status(404).json({ message: "Pet not found" });
-
-    res.json(updatedPet);
+    const updated = await pet.save();
+    res.json(updated);
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
 });
 
-// ✅ DELETE pet
-router.delete("/:id", async (req, res) => {
+// ✅ DELETE pet — only admin + cleanup Cloudinary
+router.delete("/:id", protect, admin, async (req, res) => {
   try {
-    const deleted = await Pet.findByIdAndDelete(req.params.id);
-    if (!deleted) return res.status(404).json({ message: "Pet not found" });
-    res.json({ message: "Pet deleted" });
+    const pet = await Pet.findById(req.params.id);
+    if (!pet) return res.status(404).json({ message: "Pet not found" });
+
+    // Delete image from Cloudinary if exists
+    if (pet.image && pet.image.includes("res.cloudinary.com")) {
+      const publicId = getPublicIdFromUrl(pet.image);
+      if (publicId) {
+        await cloudinary.uploader.destroy(publicId);
+      }
+    }
+
+    await Pet.findByIdAndDelete(req.params.id);
+    res.json({ message: "Pet deleted and image removed" });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
