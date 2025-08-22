@@ -3,7 +3,7 @@ import express from "express";
 import Pet from "../models/Pet.js";
 import upload from "../middleware/upload.js";
 import { v2 as cloudinary } from "cloudinary";
-import { protect, admin } from "../middleware/auth.js";
+import { protect, admin } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
