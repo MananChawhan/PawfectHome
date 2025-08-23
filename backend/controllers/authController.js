@@ -8,12 +8,12 @@ const generateToken = (id, role) => {
 };
 
 /**
- * @desc    Register new user (defaults role=user, but admin can create admin)
+ * @desc    Register new user (always role=user)
  * @route   POST /api/auth/signup
  */
 export const signup = async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password } = req.body;
 
     if (!name || !email || !password) {
       return res.status(400).json({ message: "Please provide all fields" });
@@ -24,24 +24,17 @@ export const signup = async (req, res) => {
       return res.status(400).json({ message: "User already exists" });
     }
 
-    let assignedRole = "user"; // default
-
-    // ✅ allow admin to create another admin
-    if (req.user && req.user.role === "admin" && role === "admin") {
-      assignedRole = "admin";
-    }
-
     const newUser = new User({
       name,
       email,
       password, // plain text as requested
-      role: assignedRole,
+      role: "user", // always user
     });
 
     await newUser.save();
 
     res.status(201).json({
-      message: `✅ ${assignedRole} registered successfully`,
+      message: "✅ User registered successfully",
       token: generateToken(newUser._id, newUser.role),
       user: {
         id: newUser._id,
@@ -52,6 +45,50 @@ export const signup = async (req, res) => {
     });
   } catch (err) {
     res.status(500).json({ message: "Error signing up", error: err.message });
+  }
+};
+
+/**
+ * @desc    Add new admin (only admins can do this)
+ * @route   POST /api/auth/add-admin
+ * @access  Private (Admin only)
+ */
+export const addAdmin = async (req, res) => {
+  try {
+    if (!req.user || req.user.role !== "admin") {
+      return res.status(403).json({ message: "❌ Only admins can create another admin" });
+    }
+
+    const { name, email, password } = req.body;
+    if (!name || !email || !password) {
+      return res.status(400).json({ message: "Please provide all fields" });
+    }
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: "User already exists" });
+    }
+
+    const adminUser = new User({
+      name,
+      email,
+      password, // plain text
+      role: "admin",
+    });
+
+    await adminUser.save();
+
+    res.status(201).json({
+      message: "✅ Admin added successfully",
+      user: {
+        id: adminUser._id,
+        name: adminUser.name,
+        email: adminUser.email,
+        role: adminUser.role,
+      },
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Error adding admin", error: err.message });
   }
 };
 
@@ -77,7 +114,7 @@ export const login = async (req, res) => {
       token: generateToken(user._id, user.role),
       user: {
         id: user._id,
-        name: user.name,
+        name: user.name || email.split("@")[0], // ✅ ensure name is always sent
         email: user.email,
         role: user.role,
       },

@@ -37,17 +37,17 @@ export default function Login() {
         throw new Error(data.message || `Request failed: ${res.status} ${res.statusText}`)
       }
 
-      // ✅ Save all details
+      // ✅ Save all user details from backend
       localStorage.setItem("token", data.token)
-      localStorage.setItem("role", data.role)
-      localStorage.setItem("email", data.email)
-      if (data.name) localStorage.setItem("name", data.name) // backend should send this
+      localStorage.setItem("role", data.user.role)
+      localStorage.setItem("email", data.user.email)
+      localStorage.setItem("name", data.user.name)
 
       // 🚀 Tell Navbar avatar to refresh immediately
       window.dispatchEvent(new Event("userChanged"))
 
       // ✅ Redirect based on role
-      if (data.role === "admin") {
+      if (data.user.role === "admin") {
         navigate("/admin")
       } else {
         navigate("/")

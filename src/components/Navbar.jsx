@@ -22,7 +22,12 @@ export default function Navbar() {
       const avatarUrl = localStorage.getItem("avatarUrl")
 
       if (token && role) {
-        setUser({ role, email, name, avatarUrl })
+        setUser({
+          role,
+          email,
+          name: name || email?.split("@")[0] || "User", // ✅ fallback name
+          avatarUrl,
+        })
       } else {
         setUser(null)
       }
@@ -59,6 +64,14 @@ export default function Navbar() {
     navigate("/login")
   }
 
+  // ✅ Avatar Fallback Letter
+  const getAvatarLetter = () => {
+    if (user?.name) return user.name[0].toUpperCase()
+    if (user?.email) return user.email[0].toUpperCase()
+    if (user?.role) return user.role[0].toUpperCase()
+    return "?"
+  }
+
   return (
     <>
       {/* ✅ Floating User Avatar (Top-Right Corner) */}
@@ -77,7 +90,7 @@ export default function Navbar() {
             ) : (
               <div className="w-full h-full bg-yellow-400 flex items-center justify-center 
                               text-black font-bold uppercase">
-                {user.role ? user.role[0] : "?"}
+                {getAvatarLetter()}
               </div>
             )}
           </button>
@@ -94,13 +107,15 @@ export default function Navbar() {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <span className="font-bold text-lg uppercase">{user.name ? user.name[0] : "?"}</span>
+                    <span className="font-bold text-lg uppercase">{getAvatarLetter()}</span>
                   )}
                 </div>
                 <div>
-                  <div className="font-semibold">{user.name || "User"}</div>
+                  <div className="font-semibold">{user.name}</div>
                   <div className="text-sm text-gray-500">{user.email}</div>
-                  <div className="text-xs text-gray-400 capitalize">Role: {user.role}</div>
+                  <div className="text-xs text-gray-400 capitalize">
+                    Role: {user.role}
+                  </div>
                 </div>
               </div>
 
