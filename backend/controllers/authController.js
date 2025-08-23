@@ -1,4 +1,3 @@
-// controllers/authController.js
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 
@@ -8,8 +7,7 @@ const generateToken = (id, role) => {
 };
 
 /**
- * @desc    Register new user (role=user)
- * @route   POST /api/auth/signup
+ * @desc    Register new user
  */
 export const signup = async (req, res) => {
   try {
@@ -27,7 +25,7 @@ export const signup = async (req, res) => {
     const newUser = new User({
       name,
       email,
-      password, // ⚠️ plain text (replace with bcrypt for production)
+      password, // ⚠️ store plain (use bcrypt in production)
       role: "user",
     });
 
@@ -50,17 +48,12 @@ export const signup = async (req, res) => {
 
 /**
  * @desc    Login user
- * @route   POST /api/auth/login
  */
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-
-    if (!email || !password) {
-      return res.status(400).json({ message: "Please provide email and password" });
-    }
-
     const user = await User.findOne({ email });
+
     if (!user || user.password !== password) {
       return res.status(401).json({ message: "Invalid email or password" });
     }
@@ -82,8 +75,6 @@ export const login = async (req, res) => {
 
 /**
  * @desc    Get profile
- * @route   GET /api/auth/profile
- * @access  Private
  */
 export const getProfile = async (req, res) => {
   try {
@@ -98,8 +89,6 @@ export const getProfile = async (req, res) => {
 
 /**
  * @desc    Update profile
- * @route   PUT /api/auth/profile
- * @access  Private
  */
 export const updateProfile = async (req, res) => {
   try {
@@ -107,10 +96,8 @@ export const updateProfile = async (req, res) => {
     if (!user) return res.status(404).json({ message: "User not found" });
 
     user.name = req.body.name || user.name;
-    user.avatarUrl = req.body.avatarUrl || user.avatarUrl;
-
     if (req.body.password) {
-      user.password = req.body.password; // ⚠️ plain text (replace with bcrypt for production)
+      user.password = req.body.password;
     }
 
     await user.save();
@@ -122,7 +109,6 @@ export const updateProfile = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
-        avatarUrl: user.avatarUrl || "",
       },
     });
   } catch (err) {
@@ -131,9 +117,7 @@ export const updateProfile = async (req, res) => {
 };
 
 /**
- * @desc    Add new admin (only admins can do this)
- * @route   POST /api/auth/add-admin
- * @access  Private (Admin only)
+ * @desc    Add new admin
  */
 export const addAdmin = async (req, res) => {
   try {
@@ -142,32 +126,17 @@ export const addAdmin = async (req, res) => {
     }
 
     const { name, email, password } = req.body;
-    if (!name || !email || !password) {
-      return res.status(400).json({ message: "Please provide all fields" });
-    }
-
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: "User already exists" });
     }
 
-    const adminUser = new User({
-      name,
-      email,
-      password, // ⚠️ plain text
-      role: "admin",
-    });
-
+    const adminUser = new User({ name, email, password, role: "admin" });
     await adminUser.save();
 
     res.status(201).json({
       message: "✅ Admin added successfully",
-      user: {
-        id: adminUser._id,
-        name: adminUser.name,
-        email: adminUser.email,
-        role: adminUser.role,
-      },
+      user: adminUser,
     });
   } catch (err) {
     res.status(500).json({ message: "Error adding admin", error: err.message });
@@ -176,13 +145,11 @@ export const addAdmin = async (req, res) => {
 
 /**
  * @desc    Get all admins
- * @route   GET /api/auth/admins
- * @access  Private (Admin only)
  */
 export const getAdmins = async (req, res) => {
   try {
     if (!req.user || req.user.role !== "admin") {
-      return res.status(403).json({ message: "❌ Only admins can view the admin list" });
+      return res.status(403).json({ message: "❌ Only admins can view admins" });
     }
 
     const admins = await User.find({ role: "admin" }).select("-password");
@@ -193,9 +160,23 @@ export const getAdmins = async (req, res) => {
 };
 
 /**
+ * @desc    Get all users
+ */
+export const getUsers = async (req, res) => {
+  try {
+    if (!req.user || req.user.role !== "admin") {
+      return res.status(403).json({ message: "❌ Only admins can view users" });
+    }
+
+    const users = await User.find({ role: "user" }).select("-password");
+    res.json({ users });
+  } catch (error) {
+    res.status(500).json({ message: "❌ Server error", error: error.message });
+  }
+};
+
+/**
  * @desc    Remove admin (demote to user)
- * @route   DELETE /api/auth/remove-admin/:id
- * @access  Private (Admin only)
  */
 export const removeAdmin = async (req, res) => {
   try {
@@ -206,8 +187,6 @@ export const removeAdmin = async (req, res) => {
     if (user.role !== "admin") {
       return res.status(400).json({ message: "User is not an admin" });
     }
-
-    // Prevent self-removal
     if (user._id.toString() === req.user.id) {
       return res.status(400).json({ message: "You cannot remove yourself" });
     }
@@ -222,8 +201,52 @@ export const removeAdmin = async (req, res) => {
 };
 
 /**
- * @desc    Seed initial admin user
- * @route   GET /api/auth/seed-admin
+ * @desc    Delete a user
+ */
+export const deleteUser = async (req, res) => {
+  try {
+    if (!req.user || req.user.role !== "admin") {
+      return res.status(403).json({ message: "❌ Only admins can delete users" });
+    }
+
+    const userId = req.params.id;
+    const deletedUser = await User.findByIdAndDelete(userId);
+    if (!deletedUser) return res.status(404).json({ message: "User not found" });
+
+    res.json({ message: "✅ User deleted successfully", user: deletedUser });
+  } catch (error) {
+    res.status(500).json({ message: "❌ Server error", error: error.message });
+  }
+};
+
+/**
+ * @desc    Promote user to admin
+ */
+export const promoteUserToAdmin = async (req, res) => {
+  try {
+    if (!req.user || req.user.role !== "admin") {
+      return res.status(403).json({ message: "❌ Only admins can promote users" });
+    }
+
+    const userId = req.params.id;
+    const user = await User.findById(userId);
+
+    if (!user) return res.status(404).json({ message: "User not found" });
+    if (user.role === "admin") {
+      return res.status(400).json({ message: "User is already an admin" });
+    }
+
+    user.role = "admin";
+    await user.save();
+
+    res.json({ message: "✅ User promoted to admin successfully", user });
+  } catch (error) {
+    res.status(500).json({ message: "❌ Server error", error: error.message });
+  }
+};
+
+/**
+ * @desc    Seed initial admin
  */
 export const seedAdmin = async (req, res) => {
   try {
@@ -235,7 +258,7 @@ export const seedAdmin = async (req, res) => {
     const adminUser = new User({
       name: "Admin",
       email: process.env.ADMIN_EMAIL,
-      password: process.env.ADMIN_PASSWORD, // ⚠️ plain text
+      password: process.env.ADMIN_PASSWORD,
       role: "admin",
     });
 
