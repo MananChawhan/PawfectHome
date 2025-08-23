@@ -1,16 +1,30 @@
-import express from "express";
-import { signup, login, getProfile, updateProfile, seedAdmin, addAdmin } from "../controllers/authController.js";
-import { protect } from "../middleware/authMiddleware.js";
+import express from "express"
+import {
+  signup,
+  login,
+  getProfile,
+  updateProfile,
+  seedAdmin,
+  addAdmin,
+  removeAdmin,
+  getAdmins
+} from "../controllers/authController.js"
+import { protect } from "../middleware/authMiddleware.js"
 
-const router = express.Router();
+const router = express.Router()
 
-router.post("/signup", signup);
-router.post("/login", login);
-router.get("/profile", protect, getProfile);
-router.put("/profile", protect, updateProfile);
-router.get("/seed-admin", seedAdmin);
+// Public routes
+router.post("/signup", signup)
+router.post("/login", login)
+router.get("/seed-admin", seedAdmin)
 
-// ✅ New route for admin creation
-router.post("/add-admin", protect, addAdmin);
+// Protected user routes
+router.get("/profile", protect, getProfile)
+router.put("/profile", protect, updateProfile)
 
-export default router;
+// ✅ Admin management routes
+router.post("/add-admin", protect, addAdmin)
+router.delete("/remove-admin/:id", protect, removeAdmin)
+router.get("/admins", protect, getAdmins) // 🔥 NEW route to fetch all admins
+
+export default router

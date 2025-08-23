@@ -1,5 +1,5 @@
 import { Link, NavLink, useNavigate } from "react-router-dom"
-import { PawPrint, ShieldCheck, User as UserIcon, Settings, LogOut, UserPlus } from "lucide-react"
+import { PawPrint, ShieldCheck, User as UserIcon, Settings, LogOut, UserPlus, UserMinus } from "lucide-react"
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 
@@ -155,6 +155,14 @@ export default function Navbar() {
                     >
                       <UserPlus className="w-4 h-4" /> Add Admin
                     </NavLink>
+
+                    <NavLink
+                      to="/remove-admin"
+                      className="flex items-center gap-2 text-sm hover:text-yellow-500"
+                      onClick={() => setShowUserMenu(false)}
+                    >
+                      <UserMinus className="w-4 h-4" /> Remove Admin
+                    </NavLink>
                   </>
                 )}
 
@@ -261,7 +269,6 @@ export default function Navbar() {
                 {user?.role === "admin" && (
                   <>
                     <NavLink to="/admin" className="block hover:text-yellow-400">Admin</NavLink>
-                    <NavLink to="/add-admin" className="block hover:text-yellow-400">Add Admin</NavLink>
                   </>
                 )}
                 <button

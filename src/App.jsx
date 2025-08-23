@@ -12,6 +12,7 @@ import Admin from './pages/Admin.jsx'
 import ProtectedRoute from './components/ProtectedRoute.jsx'
 import Profile from './pages/Profile.jsx'
 import AddAdmin from './pages/AddAdmin.jsx'
+import RemoveAdmin from './pages/RemoveAdmin.jsx'
 
 export default function App() {
   return (
@@ -24,6 +25,7 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/add-admin" element={<AddAdmin />} />
+          <Route path="/remove-admin" element={<RemoveAdmin />} />
           <Route
             path="/admin"
             element={

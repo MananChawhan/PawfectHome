@@ -2,13 +2,13 @@
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 
-// Helper: Generate JWT
+// 🔑 Helper: Generate JWT
 const generateToken = (id, role) => {
   return jwt.sign({ id, role }, process.env.JWT_SECRET, { expiresIn: "7d" });
 };
 
 /**
- * @desc    Register new user (always role=user)
+ * @desc    Register new user (role=user)
  * @route   POST /api/auth/signup
  */
 export const signup = async (req, res) => {
@@ -27,8 +27,8 @@ export const signup = async (req, res) => {
     const newUser = new User({
       name,
       email,
-      password, // plain text as requested
-      role: "user", // always user
+      password, // ⚠️ plain text (replace with bcrypt for production)
+      role: "user",
     });
 
     await newUser.save();
@@ -45,6 +45,88 @@ export const signup = async (req, res) => {
     });
   } catch (err) {
     res.status(500).json({ message: "Error signing up", error: err.message });
+  }
+};
+
+/**
+ * @desc    Login user
+ * @route   POST /api/auth/login
+ */
+export const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ message: "Please provide email and password" });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user || user.password !== password) {
+      return res.status(401).json({ message: "Invalid email or password" });
+    }
+
+    res.json({
+      message: "✅ Login successful",
+      token: generateToken(user._id, user.role),
+      user: {
+        id: user._id,
+        name: user.name || email.split("@")[0],
+        email: user.email,
+        role: user.role,
+      },
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Error logging in", error: err.message });
+  }
+};
+
+/**
+ * @desc    Get profile
+ * @route   GET /api/auth/profile
+ * @access  Private
+ */
+export const getProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("-password");
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    res.json({ user });
+  } catch (err) {
+    res.status(500).json({ message: "Error fetching profile", error: err.message });
+  }
+};
+
+/**
+ * @desc    Update profile
+ * @route   PUT /api/auth/profile
+ * @access  Private
+ */
+export const updateProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    user.name = req.body.name || user.name;
+    user.avatarUrl = req.body.avatarUrl || user.avatarUrl;
+
+    if (req.body.password) {
+      user.password = req.body.password; // ⚠️ plain text (replace with bcrypt for production)
+    }
+
+    await user.save();
+
+    res.json({
+      message: "✅ Profile updated successfully",
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        avatarUrl: user.avatarUrl || "",
+      },
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Error updating profile", error: err.message });
   }
 };
 
@@ -72,7 +154,7 @@ export const addAdmin = async (req, res) => {
     const adminUser = new User({
       name,
       email,
-      password, // plain text
+      password, // ⚠️ plain text
       role: "admin",
     });
 
@@ -93,94 +175,54 @@ export const addAdmin = async (req, res) => {
 };
 
 /**
- * @desc    Login user
- * @route   POST /api/auth/login
+ * @desc    Get all admins
+ * @route   GET /api/auth/admins
+ * @access  Private (Admin only)
  */
-export const login = async (req, res) => {
+export const getAdmins = async (req, res) => {
   try {
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-      return res.status(400).json({ message: "Please provide email and password" });
+    if (!req.user || req.user.role !== "admin") {
+      return res.status(403).json({ message: "❌ Only admins can view the admin list" });
     }
 
-    const user = await User.findOne({ email });
-    if (!user || user.password !== password) {
-      return res.status(401).json({ message: "Invalid email or password" });
-    }
-
-    res.json({
-      message: "✅ Login successful",
-      token: generateToken(user._id, user.role),
-      user: {
-        id: user._id,
-        name: user.name || email.split("@")[0], // ✅ ensure name is always sent
-        email: user.email,
-        role: user.role,
-      },
-    });
-  } catch (err) {
-    res.status(500).json({ message: "Error logging in", error: err.message });
+    const admins = await User.find({ role: "admin" }).select("-password");
+    res.json({ admins });
+  } catch (error) {
+    res.status(500).json({ message: "❌ Server error", error: error.message });
   }
 };
 
 /**
- * @desc    Get profile
- * @route   GET /api/auth/profile
- * @access  Private
+ * @desc    Remove admin (demote to user)
+ * @route   DELETE /api/auth/remove-admin/:id
+ * @access  Private (Admin only)
  */
-export const getProfile = async (req, res) => {
+export const removeAdmin = async (req, res) => {
   try {
-    if (!req.user) return res.status(404).json({ message: "User not found" });
+    const userId = req.params.id;
+    const user = await User.findById(userId);
 
-    res.json({
-      id: req.user._id,
-      name: req.user.name,
-      email: req.user.email,
-      role: req.user.role,
-      avatarUrl: req.user.avatarUrl || "",
-    });
-  } catch (err) {
-    res.status(500).json({ message: "Error fetching profile", error: err.message });
-  }
-};
-
-/**
- * @desc    Update profile
- * @route   PUT /api/auth/profile
- * @access  Private
- */
-export const updateProfile = async (req, res) => {
-  try {
-    const user = await User.findById(req.user._id);
     if (!user) return res.status(404).json({ message: "User not found" });
-
-    user.name = req.body.name || user.name;
-    user.avatarUrl = req.body.avatarUrl || user.avatarUrl;
-
-    if (req.body.password) {
-      user.password = req.body.password; // plain text as requested
+    if (user.role !== "admin") {
+      return res.status(400).json({ message: "User is not an admin" });
     }
 
+    // Prevent self-removal
+    if (user._id.toString() === req.user.id) {
+      return res.status(400).json({ message: "You cannot remove yourself" });
+    }
+
+    user.role = "user";
     await user.save();
 
-    res.json({
-      message: "✅ Profile updated successfully",
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        avatarUrl: user.avatarUrl || "",
-      },
-    });
-  } catch (err) {
-    res.status(500).json({ message: "Error updating profile", error: err.message });
+    res.json({ message: "✅ Admin removed successfully", user });
+  } catch (error) {
+    res.status(500).json({ message: "❌ Server error", error: error.message });
   }
 };
 
 /**
- * @desc    Seed Admin user
+ * @desc    Seed initial admin user
  * @route   GET /api/auth/seed-admin
  */
 export const seedAdmin = async (req, res) => {
@@ -193,7 +235,7 @@ export const seedAdmin = async (req, res) => {
     const adminUser = new User({
       name: "Admin",
       email: process.env.ADMIN_EMAIL,
-      password: process.env.ADMIN_PASSWORD, // plain text as requested
+      password: process.env.ADMIN_PASSWORD, // ⚠️ plain text
       role: "admin",
     });
 
