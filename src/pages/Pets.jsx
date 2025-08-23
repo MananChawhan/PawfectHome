@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import PetCard from "../components/PetCard.jsx";
 import FilterBar from "../components/FilterBar.jsx";
 import { Link } from "react-router-dom";
-
+import { PawPrint, Heart, Users, Dog } from "lucide-react";
 
 // Swiper v10+ imports
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -74,7 +74,7 @@ export default function Pets() {
 
   return (
     <motion.section
-      className="px-6 max-w-7xl mx-auto space-y-16 mt-20 mb-20"
+      className="px-6 max-w-7xl mx-auto space-y-20 mt-20 mb-20"
       initial="hidden"
       animate="visible"
       variants={stagger}
@@ -86,7 +86,7 @@ export default function Pets() {
           navigation
           loop
           autoplay={{ delay: 4000 }}
-          className="rounded-3xl overflow-hidden shadow-lg"
+          className="rounded-3xl overflow-hidden shadow-xl"
         >
           {featuredPets.map((p) => (
             <SwiperSlide key={p._id}>
@@ -94,11 +94,17 @@ export default function Pets() {
                 <img
                   src={p.image || "https://placehold.co/600x400?text=No+Image"}
                   alt={p.name}
-                  className="w-full h-72 object-cover"
+                  className="w-full h-[420px] object-cover"
                 />
-                <div className="absolute bottom-4 left-4 bg-black bg-opacity-50 text-white px-4 py-2 rounded-lg">
-                  <h3 className="font-bold text-lg">{p.name}</h3>
-                  <p className="text-sm">{p.breed}</p>
+                <div className="absolute inset-0 bg-black/40 flex flex-col justify-center items-center text-center text-white p-6">
+                  <h2 className="text-4xl font-bold drop-shadow-lg">{p.name}</h2>
+                  <p className="text-lg">{p.breed}</p>
+                  <Link
+                    to={`/adopt/${p._id}`}
+                    className="mt-4 px-6 py-3 bg-yellow-500 hover:bg-yellow-600 rounded-lg shadow-lg font-semibold"
+                  >
+                    Adopt {p.name}
+                  </Link>
                 </div>
               </div>
             </SwiperSlide>
@@ -108,30 +114,34 @@ export default function Pets() {
 
       {/* Stats */}
       <motion.div
-        className="flex justify-center gap-6 text-center flex-wrap"
+        className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 text-center"
         variants={fadeUp}
       >
-        <div className="bg-yellow-100 px-6 py-4 rounded-xl font-semibold shadow">
-          <p className="text-2xl">{totalPets}</p>
-          <p>Total Pets</p>
+        <div className="bg-yellow-100 px-6 py-6 rounded-xl shadow flex flex-col items-center">
+          <PawPrint className="w-8 h-8 text-yellow-600 mb-2" />
+          <p className="text-2xl font-bold">{totalPets}</p>
+          <p className="font-medium">Total Pets</p>
         </div>
-        <div className="bg-green-100 px-6 py-4 rounded-xl font-semibold shadow">
-          <p className="text-2xl">{filteredPets}</p>
-          <p>Matching Filters</p>
+        <div className="bg-green-100 px-6 py-6 rounded-xl shadow flex flex-col items-center">
+          <Dog className="w-8 h-8 text-green-600 mb-2" />
+          <p className="text-2xl font-bold">{filteredPets}</p>
+          <p className="font-medium">Matching Filters</p>
         </div>
-        <div className="bg-blue-100 px-6 py-4 rounded-xl font-semibold shadow">
-          <p className="text-2xl">{adopters}</p>
-          <p>Happy Adopters</p>
+        <div className="bg-blue-100 px-6 py-6 rounded-xl shadow flex flex-col items-center">
+          <Heart className="w-8 h-8 text-blue-600 mb-2" />
+          <p className="text-2xl font-bold">{adopters}</p>
+          <p className="font-medium">Happy Adopters</p>
         </div>
-        <div className="bg-pink-100 px-6 py-4 rounded-xl font-semibold shadow">
-          <p className="text-2xl">{volunteers}</p>
-          <p>Active Volunteers</p>
+        <div className="bg-pink-100 px-6 py-6 rounded-xl shadow flex flex-col items-center">
+          <Users className="w-8 h-8 text-pink-600 mb-2" />
+          <p className="text-2xl font-bold">{volunteers}</p>
+          <p className="font-medium">Volunteers</p>
         </div>
       </motion.div>
 
       {/* Filter + Sort Bar */}
       <motion.div
-        className="flex flex-col sm:flex-row justify-between items-center gap-4"
+        className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-white p-4 rounded-xl shadow"
         variants={fadeUp}
       >
         <FilterBar
@@ -143,7 +153,7 @@ export default function Pets() {
         <select
           value={sort}
           onChange={(e) => setSort(e.target.value)}
-          className="border rounded-lg px-3 py-2 shadow"
+          className="border rounded-lg px-4 py-2 shadow focus:ring focus:ring-yellow-300"
         >
           <option value="name">Sort by Name</option>
           <option value="age">Sort by Age</option>
@@ -152,14 +162,14 @@ export default function Pets() {
 
       {/* Pets Grid */}
       <motion.div
-        className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"
+        className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8"
         variants={stagger}
       >
         {loading ? (
           [...Array(6)].map((_, i) => (
             <div
               key={i}
-              className="bg-gray-200 animate-pulse h-60 rounded-2xl"
+              className="bg-gray-200 animate-pulse h-64 rounded-2xl"
             />
           ))
         ) : filtered.length > 0 ? (
@@ -168,17 +178,16 @@ export default function Pets() {
               key={p._id}
               variants={fadeUp}
               whileHover={{ scale: 1.03 }}
-              className="bg-white rounded-2xl shadow transition relative"
+              className="bg-white rounded-2xl shadow-lg transition relative group"
             >
               <PetCard pet={p} />
               {/* Adopt Button */}
-              <button
-  className="absolute bottom-3 right-3 bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-lg shadow"
->
-  <Link to={`/adopt/${p._id}`} className="block">
-    Adopt Me
-  </Link>
-</button>
+              <Link
+                to={`/adopt/${p._id}`}
+                className="absolute bottom-3 right-3 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg shadow opacity-0 group-hover:opacity-100 transition"
+              >
+                Adopt Me
+              </Link>
             </motion.div>
           ))
         ) : (
@@ -189,6 +198,23 @@ export default function Pets() {
             No pets found. Try different filters.
           </motion.div>
         )}
+      </motion.div>
+
+      {/* Call to Action */}
+      <motion.div
+        className="bg-yellow-100 p-10 rounded-3xl shadow-lg text-center space-y-4"
+        variants={fadeUp}
+      >
+        <h2 className="text-3xl font-bold ">Ready to give a pet a forever home?</h2>
+        <p className="text-lg text-gray-700 p-4">
+          Browse our lovely pets and make a difference today.
+        </p>
+        <Link
+          to="/contact"
+          className="px-6 py-3 bg-yellow-500 hover:bg-yellow-600 rounded-lg font-semibold shadow "
+        >
+          Become a Volunteer
+        </Link>
       </motion.div>
     </motion.section>
   );
