@@ -13,6 +13,8 @@ import ProtectedRoute from "./components/ProtectedRoute.jsx"
 import Profile from "./pages/Profile.jsx"
 import AddAdmin from "./pages/AddAdmin.jsx"
 import RemoveAdmin from "./pages/RemoveAdmin.jsx"
+import ManageAccounts from "./pages/ManageAccounts.jsx"
+
 
 export default function App() {
   return (
@@ -35,6 +37,7 @@ export default function App() {
               </ProtectedRoute>
             }
           />
+          <Route path="/manage-accounts" element={<ManageAccounts />} />
           <Route
             path="/remove-admin"
             element={

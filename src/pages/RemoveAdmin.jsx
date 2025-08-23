@@ -90,7 +90,7 @@ export default function RemoveAdmin() {
   };
 
   return (
-    <div className="space-y-16">
+    <div className="space-y-16 mt-20">
       {/* Admin Section */}
       <section>
         <h2 className="text-3xl font-bold mb-8 text-center text-gray-800">

@@ -1,18 +1,30 @@
 import { Link, NavLink, useNavigate } from "react-router-dom"
-import { PawPrint, ShieldCheck, User as UserIcon, Settings, LogOut, UserPlus, UserMinus } from "lucide-react"
+import {
+  Home,
+  HeartHandshake,
+  Info,
+  Mail,
+  LogIn,
+  PawPrint,
+  ShieldCheck,
+  User as UserIcon,
+  Settings,
+  LogOut,
+  UserPlus,
+  UserMinus,
+} from "lucide-react"
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 
 export default function Navbar() {
   const [isShrunk, setIsShrunk] = useState(false)
-  const [showPopup, setShowPopup] = useState(false) // Pawprint popup
-  const [showUserMenu, setShowUserMenu] = useState(false) // User avatar popup
+  const [showPopup, setShowPopup] = useState(false)
+  const [showUserMenu, setShowUserMenu] = useState(false)
 
-  // 🚀 Auth state
   const [user, setUser] = useState(null)
   const navigate = useNavigate()
 
-  // Load user from localStorage
+  // Load user
   useEffect(() => {
     const loadUser = () => {
       const token = localStorage.getItem("token")
@@ -25,105 +37,87 @@ export default function Navbar() {
         setUser({
           role,
           email,
-          name: name || email?.split("@")[0] || "User", // ✅ fallback name
+          name: name || email?.split("@")[0] || "User",
           avatarUrl,
         })
-      } else {
-        setUser(null)
-      }
+      } else setUser(null)
     }
-
     loadUser()
-
-    // 🔥 Custom event listener for login/logout changes
     window.addEventListener("userChanged", loadUser)
-
     return () => window.removeEventListener("userChanged", loadUser)
   }, [])
 
-  // Scroll detection
+  // Scroll shrink
   useEffect(() => {
-    const handleScroll = () => {
-      setIsShrunk(window.scrollY > 50)
-    }
+    const handleScroll = () => setIsShrunk(window.scrollY > 50)
     window.addEventListener("scroll", handleScroll)
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
-  // Auto close pawprint popup when navbar expands
   useEffect(() => {
     if (!isShrunk) setShowPopup(false)
   }, [isShrunk])
 
-  // Logout
   const handleLogout = () => {
     localStorage.clear()
     setUser(null)
     setShowUserMenu(false)
-    window.dispatchEvent(new Event("userChanged")) // 🔥 Tell Navbar to update
+    window.dispatchEvent(new Event("userChanged"))
     navigate("/login")
   }
 
-  // ✅ Avatar Fallback Letter
-  const getAvatarLetter = () => {
-    if (user?.name) return user.name[0].toUpperCase()
-    if (user?.email) return user.email[0].toUpperCase()
-    if (user?.role) return user.role[0].toUpperCase()
-    return "?"
-  }
+  const getAvatarLetter = () =>
+    user?.name?.[0]?.toUpperCase() ||
+    user?.email?.[0]?.toUpperCase() ||
+    user?.role?.[0]?.toUpperCase() ||
+    "?"
 
   return (
     <>
-      {/* ✅ Floating User Avatar (Top-Right Corner) */}
+      {/* Floating Avatar Menu */}
       {user && (
         <div className="fixed top-4 right-4 z-50">
           <button
             onClick={() => setShowUserMenu(!showUserMenu)}
-            className="w-12 h-12 rounded-full overflow-hidden shadow-lg"
+            className="w-12 h-12 rounded-full overflow-hidden shadow-md border-2 border-yellow-400 hover:scale-105 transition"
           >
             {user.avatarUrl ? (
-              <img
-                src={user.avatarUrl}
-                alt="User Avatar"
-                className="w-full h-full object-cover"
-              />
+              <img src={user.avatarUrl} alt="User Avatar" className="w-full h-full object-cover" />
             ) : (
-              <div className="w-full h-full bg-yellow-400 flex items-center justify-center 
-                              text-black font-bold uppercase">
+              <div className="w-full h-full bg-yellow-400 flex items-center justify-center text-black font-bold uppercase">
                 {getAvatarLetter()}
               </div>
             )}
           </button>
 
           {showUserMenu && (
-            <div className="absolute right-0 mt-2 w-64 bg-white text-black rounded-xl shadow-lg p-4 space-y-3">
-              {/* 👤 Profile Header */}
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="absolute right-0 mt-3 w-72 bg-white/90 backdrop-blur-md text-black rounded-2xl shadow-xl p-4 space-y-3 border border-gray-200"
+            >
+              {/* Profile Header */}
               <div className="flex items-center gap-3 border-b pb-3">
-                <div className="w-12 h-12 rounded-full overflow-hidden bg-yellow-400 flex items-center justify-center">
+                <div className="w-12 h-12 rounded-full bg-yellow-400 flex items-center justify-center overflow-hidden">
                   {user.avatarUrl ? (
-                    <img
-                      src={user.avatarUrl}
-                      alt="User Avatar"
-                      className="w-full h-full object-cover"
-                    />
+                    <img src={user.avatarUrl} alt="User Avatar" className="w-full h-full object-cover" />
                   ) : (
-                    <span className="font-bold text-lg uppercase">{getAvatarLetter()}</span>
+                    <span className="font-bold text-lg">{getAvatarLetter()}</span>
                   )}
                 </div>
                 <div>
                   <div className="font-semibold">{user.name}</div>
                   <div className="text-sm text-gray-500">{user.email}</div>
-                  <div className="text-xs text-gray-400 capitalize">
-                    Role: {user.role}
-                  </div>
+                  <div className="text-xs text-gray-400 capitalize">Role: {user.role}</div>
                 </div>
               </div>
 
-              {/* 🔗 Menu Links */}
+              {/* Links */}
               <div className="space-y-2">
                 <NavLink
                   to="/profile"
-                  className="flex items-center gap-2 text-sm hover:text-yellow-500"
+                  className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-yellow-50 hover:text-yellow-600 transition"
                   onClick={() => setShowUserMenu(false)}
                 >
                   <UserIcon className="w-4 h-4" /> Profile
@@ -131,54 +125,51 @@ export default function Navbar() {
 
                 <NavLink
                   to="/settings"
-                  className="flex items-center gap-2 text-sm hover:text-yellow-500"
+                  className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-yellow-50 hover:text-yellow-600 transition"
                   onClick={() => setShowUserMenu(false)}
                 >
                   <Settings className="w-4 h-4" /> Settings
                 </NavLink>
 
-                {/* ✅ Admin-only options */}
                 {user.role === "admin" && (
                   <>
                     <NavLink
                       to="/admin"
-                      className="flex items-center gap-2 text-sm hover:text-yellow-500"
+                      className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-yellow-50 hover:text-yellow-600 transition"
                       onClick={() => setShowUserMenu(false)}
                     >
-                      <ShieldCheck className="w-4 h-4" /> Admin Dashboard
+                      <ShieldCheck className="w-4 h-4 text-yellow-600" /> Admin Dashboard
                     </NavLink>
-
                     <NavLink
                       to="/add-admin"
-                      className="flex items-center gap-2 text-sm hover:text-yellow-500"
+                      className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-green-50 hover:text-green-600 transition"
                       onClick={() => setShowUserMenu(false)}
                     >
-                      <UserPlus className="w-4 h-4" /> Add Admin
+                      <UserPlus className="w-4 h-4 text-green-600" /> Add Admin
                     </NavLink>
-
                     <NavLink
-                      to="/remove-admin"
-                      className="flex items-center gap-2 text-sm hover:text-yellow-500"
+                      to="/manage-accounts"
+                      className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-red-50 hover:text-red-600 transition"
                       onClick={() => setShowUserMenu(false)}
                     >
-                      <UserMinus className="w-4 h-4" /> Remove Admin
+                      <UserMinus className="w-4 h-4 text-red-600" /> Manage Accounts
                     </NavLink>
                   </>
                 )}
 
                 <button
                   onClick={handleLogout}
-                  className="flex items-center gap-2 text-sm text-red-500 hover:text-red-600 w-full"
+                  className="flex items-center gap-2 px-3 py-2 rounded-xl text-red-500 hover:bg-red-50 hover:text-red-600 w-full transition"
                 >
                   <LogOut className="w-4 h-4" /> Logout
                 </button>
               </div>
-            </div>
+            </motion.div>
           )}
         </div>
       )}
 
-      {/* ✅ PawPrint Navbar */}
+      {/* Main Navbar */}
       <header className="fixed top-4 left-0 right-0 z-40 flex justify-center">
         <motion.nav
           role="navigation"
@@ -186,26 +177,25 @@ export default function Navbar() {
           initial={false}
           animate={{
             width: isShrunk ? 64 : "90%",
-            maxWidth: isShrunk ? "64px" : "900px",
+            maxWidth: isShrunk ? "64px" : "950px",
             height: 64,
             borderRadius: 9999,
-            padding: isShrunk ? "0px" : "0 20px",
+            padding: isShrunk ? "0px" : "0 24px",
             justifyContent: isShrunk ? "center" : "space-between",
             left: isShrunk ? "1rem" : "50%",
             x: isShrunk ? 0 : "-50%",
           }}
-          transition={{ type: "spring", stiffness: 80, damping: 20 }}
-          className="absolute bg-black/20 backdrop-blur-md border border-white/20 
-                     flex items-center shadow-lg"
+          transition={{ type: "spring", stiffness: 90, damping: 18 }}
+          className="absolute bg-white/90 backdrop-blur-lg border border-white/30 flex items-center shadow-xl"
         >
-          {/* Left Section - Logo */}
+          {/* Left - Logo */}
           <div
             className="flex items-center gap-2 cursor-pointer"
             onClick={() => isShrunk && setShowPopup(!showPopup)}
           >
             <PawPrint className="w-7 h-7 text-yellow-400" />
             {!isShrunk && (
-              <Link to="/" className="text-white font-bold text-lg hover:text-yellow-400">
+              <Link to="/" className="text-gray-800 font-bold text-lg hover:text-yellow-500">
                 PawfectHome
               </Link>
             )}
@@ -213,69 +203,126 @@ export default function Navbar() {
 
           {/* Center Links */}
           {!isShrunk && (
-            <nav className="flex items-center gap-6 text-white font-medium">
-              <NavLink to="/" className="hover:text-yellow-400">Home</NavLink>
-              <NavLink to="/pets" className="hover:text-yellow-400">Pets</NavLink>
-              <NavLink to="/adoptions" className="hover:text-yellow-400">Adoptions</NavLink>
-              <NavLink to="/about" className="hover:text-yellow-400">About</NavLink>
-              <NavLink to="/contact" className="hover:text-yellow-400">Contact</NavLink>
+            <nav className="flex items-center gap-6 text-gray-800 font-medium">
+              {[
+                { to: "/", label: "Home", icon: Home },
+                { to: "/pets", label: "Pets", icon: PawPrint },
+                { to: "/adoptions", label: "Adoptions", icon: HeartHandshake },
+                { to: "/about", label: "About", icon: Info },
+                { to: "/contact", label: "Contact", icon: Mail },
+              ].map(({ to, label, icon: Icon }) => (
+                <NavLink
+                  key={to}
+                  to={to}
+                  className={({ isActive }) =>
+                    `flex items-center gap-1 hover:text-yellow-500 transition ${
+                      isActive ? "text-yellow-500 font-semibold" : ""
+                    }`
+                  }
+                >
+                  <Icon className="w-4 h-4" /> {label}
+                </NavLink>
+              ))}
+
               {user?.role === "admin" && (
-                <NavLink to="/admin" className="hover:text-yellow-400 flex items-center gap-1">
+                <NavLink
+                  to="/admin"
+                  className="flex items-center gap-1 hover:text-yellow-500 transition"
+                >
                   <ShieldCheck className="w-4 h-4" /> Admin
                 </NavLink>
               )}
             </nav>
           )}
 
-          {/* Right Section (only for guests) */}
+          {/* Right - Auth Buttons */}
           {!isShrunk && !user && (
             <div className="flex items-center gap-4">
               <Link
                 to="/login"
-                className="bg-yellow-400 text-black font-semibold px-4 py-2 rounded-full 
-                           hover:bg-yellow-300 transition"
+                className="bg-yellow-400 text-black font-semibold px-5 py-2 rounded-full shadow hover:bg-yellow-300 transition"
               >
                 Login
               </Link>
-              <Link
-                to="/signup"
-                className="text-white font-semibold hover:text-yellow-400"
-              >
+              <Link to="/signup" className="text-gray-800 font-semibold hover:text-yellow-500 transition">
                 Sign Up
               </Link>
             </div>
           )}
         </motion.nav>
 
-        {/* Popup Menu when Shrunk */}
+        {/* Popup when Shrunk */}
         {isShrunk && showPopup && (
-          <div
-            className="absolute top-20 left-4 bg-black/20 text-white 
-                       p-4 rounded-xl shadow-lg space-y-3 w-44 border border-white/20"
-          >
-            <NavLink to="/" className="block hover:text-yellow-400">Home</NavLink>
-            <NavLink to="/pets" className="block hover:text-yellow-400">Pets</NavLink>
-            <NavLink to="/adoptions" className="block hover:text-yellow-400">Adoptions</NavLink>
-            <NavLink to="/about" className="block hover:text-yellow-400">About</NavLink>
-            <NavLink to="/contact" className="block hover:text-yellow-400">Contact</NavLink>
+          <div className="absolute top-20 left-4 bg-white/95 backdrop-blur-md shadow-xl rounded-2xl p-3 w-64 border border-gray-200 space-y-2">
+            {[
+              { to: "/", label: "Home", icon: Home, color: "text-yellow-600" },
+              { to: "/pets", label: "Pets", icon: PawPrint, color: "text-yellow-600" },
+              { to: "/adoptions", label: "Adoptions", icon: HeartHandshake, color: "text-yellow-600" },
+              { to: "/about", label: "About", icon: Info, color: "text-yellow-600" },
+              { to: "/contact", label: "Contact", icon: Mail, color: "text-yellow-600" },
+            ].map(({ to, label, icon: Icon, color }) => (
+              <NavLink
+                key={to}
+                to={to}
+                onClick={() => setShowPopup(false)}
+                className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-yellow-50 hover:text-yellow-600 transition"
+              >
+                <Icon className={`w-4 h-4 ${color}`} /> {label}
+              </NavLink>
+            ))}
 
             {!user ? (
               <>
-                <NavLink to="/login" className="block hover:text-yellow-400">Login</NavLink>
-                <NavLink to="/signup" className="block hover:text-yellow-400">Sign Up</NavLink>
+                <NavLink
+                  to="/login"
+                  onClick={() => setShowPopup(false)}
+                  className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-green-50 hover:text-green-600 transition"
+                >
+                  <LogIn className="w-4 h-4 text-green-600" /> Login
+                </NavLink>
+                <NavLink
+                  to="/signup"
+                  onClick={() => setShowPopup(false)}
+                  className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-blue-50 hover:text-blue-600 transition"
+                >
+                  <UserPlus className="w-4 h-4 text-blue-600" /> Sign Up
+                </NavLink>
               </>
             ) : (
               <>
                 {user?.role === "admin" && (
                   <>
-                    <NavLink to="/admin" className="block hover:text-yellow-400">Admin</NavLink>
+                    <NavLink
+                      to="/admin"
+                      onClick={() => setShowPopup(false)}
+                      className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-yellow-50 hover:text-yellow-600 transition"
+                    >
+                      <ShieldCheck className="w-4 h-4 text-yellow-600" /> Admin Dashboard
+                    </NavLink>
+                    <NavLink
+                      to="/add-admin"
+                      onClick={() => setShowPopup(false)}
+                      className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-green-50 hover:text-green-600 transition"
+                    >
+                      <UserPlus className="w-4 h-4 text-green-600" /> Add Admin
+                    </NavLink>
+                    <NavLink
+                      to="/manage-accounts"
+                      onClick={() => setShowPopup(false)}
+                      className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-red-50 hover:text-red-600 transition"
+                    >
+                      <UserMinus className="w-4 h-4 text-red-600" /> Manage Accounts
+                    </NavLink>
                   </>
                 )}
                 <button
-                  onClick={handleLogout}
-                  className="block w-full text-left hover:text-red-400"
+                  onClick={() => {
+                    handleLogout()
+                    setShowPopup(false)
+                  }}
+                  className="flex items-center gap-2 px-3 py-2 w-full rounded-xl hover:bg-red-50 text-red-500 hover:text-red-600 transition"
                 >
-                  Logout
+                  <LogOut className="w-4 h-4 text-red-600" /> Logout
                 </button>
               </>
             )}
