@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import { Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar.jsx";
 import Footer from "./components/Footer.jsx";
@@ -17,25 +16,6 @@ import AddAdmin from "./pages/AddAdmin.jsx";
 import RemoveAdmin from "./pages/RemoveAdmin.jsx";
 import ManageAccounts from "./pages/ManageAccounts.jsx";
 import AdoptionConfirmation from "./pages/AdoptionConfirmation.jsx";
-=======
-import { Routes, Route } from "react-router-dom"
-import Navbar from "./components/Navbar.jsx"
-import Footer from "./components/Footer.jsx"
-import Home from "./pages/Home.jsx"
-import Pets from "./pages/Pets.jsx"
-import About from "./pages/About.jsx"
-import Contact from "./pages/Contact.jsx"
-import Adopt from "./pages/Adopt.jsx"
-import Login from "./pages/Login.jsx"
-import Signup from "./pages/Signup.jsx"
-import Admin from "./pages/Admin.jsx"
-import ProtectedRoute from "./components/ProtectedRoute.jsx"
-import Profile from "./pages/Profile.jsx"
-import AddAdmin from "./pages/AddAdmin.jsx"
-import RemoveAdmin from "./pages/RemoveAdmin.jsx"
-import ManageAccounts from "./pages/ManageAccounts.jsx"
-
->>>>>>> f6480e8865b6ac02513109a2920f9d3c409bd9f9
 
 export default function App() {
   return (
@@ -50,7 +30,6 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/profile" element={<Profile />} />
-<<<<<<< HEAD
 
           {/* Pet adoption flow */}
           <Route path="/adopt/:id" element={<Adopt />} />
@@ -59,8 +38,6 @@ export default function App() {
 
 
           {/* Admin routes */}
-=======
->>>>>>> f6480e8865b6ac02513109a2920f9d3c409bd9f9
           <Route
             path="/add-admin"
             element={
@@ -86,12 +63,8 @@ export default function App() {
               </ProtectedRoute>
             }
           />
-<<<<<<< HEAD
 
           {/* Other pages */}
-=======
-          <Route path="/adopt/:id" element={<Adopt />} />
->>>>>>> f6480e8865b6ac02513109a2920f9d3c409bd9f9
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
         </Routes>
@@ -99,9 +72,5 @@ export default function App() {
 
       <Footer />
     </div>
-<<<<<<< HEAD
   );
-=======
-  )
->>>>>>> f6480e8865b6ac02513109a2920f9d3c409bd9f9
 }
