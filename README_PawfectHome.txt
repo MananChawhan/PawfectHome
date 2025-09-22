@@ -125,3 +125,5 @@ This will create a default admin with:
 - **Database**: Use [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) (free)
 - **Backend**: Deploy to [Render](https://render.com)
 - **Frontend**: Deploy to [Vercel](https://vercel.com) or [Netlify](https://netlify.com)
+
+hi from shushank..!
