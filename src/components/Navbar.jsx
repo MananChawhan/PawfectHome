@@ -206,6 +206,7 @@ export default function Navbar() {
             )}
           </button>
 
+<<<<<<< HEAD
           {/* Center Links */}
           {!isShrunk && (
             <nav className="flex-1 flex justify-center items-center gap-6 text-gray-800 font-medium">
@@ -254,11 +255,69 @@ export default function Navbar() {
               >
                 Sign Up
               </Link>
+=======
+          {/* Center + Right (single scrollable row, only when not shrunk) */}
+          {!isShrunk && (
+            <div className="flex items-center gap-4 sm:gap-6 flex-1 min-w-0 overflow-x-auto whitespace-nowrap pr-3">
+              {/* Center Links */}
+              <nav className="flex items-center gap-4 sm:gap-6 text-gray-800 font-medium">
+                {[
+                  { to: "/", label: "Home", icon: Home },
+                  { to: "/pets", label: "Pets", icon: PawPrint },
+                  { to: "/adoptions", label: "Adoptions", icon: HeartHandshake },
+                  { to: "/about", label: "About", icon: Info },
+                  { to: "/contact", label: "Contact", icon: Mail },
+                ].map(({ to, label, icon: Icon }) => (
+                  <NavLink
+                    key={to}
+                    to={to}
+                    className={({ isActive }) =>
+                      `flex items-center gap-1 text-sm sm:text-base hover:text-yellow-500 transition ${
+                        isActive ? "text-yellow-500 font-semibold" : ""
+                      }`
+                    }
+                  >
+                    <Icon className="w-4 h-4" /> {label}
+                  </NavLink>
+                ))}
+
+                {user?.role === "admin" && (
+                  <NavLink
+                    to="/admin"
+                    className="flex items-center gap-1 text-sm sm:text-base hover:text-yellow-500 transition"
+                  >
+                    <ShieldCheck className="w-4 h-4" /> Admin
+                  </NavLink>
+                )}
+              </nav>
+
+              {/* Right - Auth Buttons (kept as-is, just tighter on small screens) */}
+              {!user && (
+                <div className="flex items-center gap-3 sm:gap-4 flex-shrink-0 ml-auto">
+                  <Link
+                    to="/login"
+                    className="bg-yellow-400 text-black font-semibold px-4 sm:px-5 py-2 rounded-full shadow hover:bg-yellow-300 transition text-sm sm:text-base"
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    to="/signup"
+                    className="text-gray-800 font-semibold hover:text-yellow-500 transition text-sm sm:text-base"
+                  >
+                    Sign Up
+                  </Link>
+                </div>
+              )}
+>>>>>>> f6480e8865b6ac02513109a2920f9d3c409bd9f9
             </div>
           )}
         </motion.nav>
 
+<<<<<<< HEAD
         {/* Popup when Shrunk */}
+=======
+        {/* Popup when Shrunk (unchanged behavior) */}
+>>>>>>> f6480e8865b6ac02513109a2920f9d3c409bd9f9
         {isShrunk && showPopup && (
           <div className="absolute top-20 left-4 bg-white/95 backdrop-blur-md shadow-xl rounded-2xl p-3 w-[85vw] max-w-[320px] border border-gray-200 space-y-2">
             {[
@@ -338,4 +397,8 @@ export default function Navbar() {
       </header>
     </>
   )
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> f6480e8865b6ac02513109a2920f9d3c409bd9f9

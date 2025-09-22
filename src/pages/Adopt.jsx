@@ -1,11 +1,18 @@
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
+<<<<<<< HEAD
 import { PawPrint, Heart, Dog, Users } from "lucide-react";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
+=======
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 10, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
+>>>>>>> f6480e8865b6ac02513109a2920f9d3c409bd9f9
 };
 const stagger = {
   hidden: {},
@@ -13,7 +20,11 @@ const stagger = {
 };
 
 export default function Adopt() {
+<<<<<<< HEAD
   const { id } = useParams();
+=======
+  const { id } = useParams(); // <-- now this matches pet._id
+>>>>>>> f6480e8865b6ac02513109a2920f9d3c409bd9f9
   const [pet, setPet] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -35,12 +46,20 @@ export default function Adopt() {
   if (loading) {
     return (
       <motion.section
+<<<<<<< HEAD
         className="px-6 max-w-4xl mx-auto mt-28 mb-20 text-center text-gray-800"
+=======
+        className="px-6 max-w-4xl mx-auto mt-28 mb-20 text-center text-black"
+>>>>>>> f6480e8865b6ac02513109a2920f9d3c409bd9f9
         initial="hidden"
         animate="visible"
         variants={fadeUp}
       >
+<<<<<<< HEAD
         <p className="text-lg font-medium">Loading pet details...</p>
+=======
+        <p className="text-lg font-semibold">Loading pet details...</p>
+>>>>>>> f6480e8865b6ac02513109a2920f9d3c409bd9f9
       </motion.section>
     );
   }
@@ -54,6 +73,7 @@ export default function Adopt() {
         variants={stagger}
       >
         <motion.div
+<<<<<<< HEAD
           className="bg-white rounded-3xl shadow-xl p-8 text-center"
           variants={fadeUp}
         >
@@ -61,6 +81,15 @@ export default function Adopt() {
           <Link
             to="/pets"
             className="inline-block px-6 py-3 bg-gray-900 text-white font-semibold rounded-lg shadow hover:bg-gray-800 transition"
+=======
+          className="bg-white rounded-2xl shadow-lg p-6 text-center text-black"
+          variants={fadeUp}
+        >
+          <p className="font-bold text-xl">Pet not found.</p>
+          <Link
+            to="/pets"
+            className="mt-4 inline-block px-6 py-3 bg-orange-600 text-white font-semibold rounded-xl shadow hover:bg-orange-700 transition"
+>>>>>>> f6480e8865b6ac02513109a2920f9d3c409bd9f9
           >
             Back to Pets
           </Link>
@@ -71,11 +100,16 @@ export default function Adopt() {
 
   return (
     <motion.section
+<<<<<<< HEAD
       className="px-6 max-w-7xl mx-auto mt-28 mb-20 space-y-12"
+=======
+      className="px-6 max-w-7xl mx-auto mt-28 mb-20 grid lg:grid-cols-2 gap-8"
+>>>>>>> f6480e8865b6ac02513109a2920f9d3c409bd9f9
       initial="hidden"
       animate="visible"
       variants={stagger}
     >
+<<<<<<< HEAD
       {/* Pet Overview Grid */}
       <div className="grid lg:grid-cols-2 gap-12 items-start">
         {/* Left: Pet Image */}
@@ -157,6 +191,56 @@ export default function Adopt() {
           </div>
         </motion.div>
       </div>
+=======
+      {/* Pet Image */}
+      <motion.div
+        className="bg-white rounded-2xl shadow-lg overflow-hidden"
+        variants={fadeUp}
+      >
+        <img
+          src={pet.image || "https://placehold.co/600x400?text=No+Image"}
+          alt={pet.name}
+          className="w-full h-96 object-cover"
+        />
+      </motion.div>
+
+      {/* Pet Details */}
+      <motion.div className="space-y-4 text-gray-900" variants={fadeUp}>
+        <h2 className="text-3xl font-extrabold text-black">{pet.name}</h2>
+        <div className="flex gap-2 flex-wrap">
+          <span className="px-3 py-1 text-sm font-semibold bg-orange-700 text-white rounded-full">
+            {pet.type}
+          </span>
+          <span className="px-3 py-1 text-sm font-semibold bg-blue-700 text-white rounded-full">
+            {pet.gender}
+          </span>
+          <span className="px-3 py-1 text-sm font-semibold bg-green-700 text-white rounded-full">
+            Age: {pet.age}
+          </span>
+        </div>
+        <p className="text-base text-black">{pet.description}</p>
+        <ul className="list-disc pl-6 space-y-1 text-black">
+          <li><strong>Breed:</strong> {pet.breed}</li>
+          <li><strong>Vaccinated:</strong> {pet.vaccinated ? "Yes" : "No"}</li>
+          <li><strong>Neutered:</strong> {pet.neutered ? "Yes" : "No"}</li>
+          <li><strong>Good with:</strong> {pet.goodWith?.length > 0 ? pet.goodWith.join(", ") : "N/A"}</li>
+        </ul>
+        <div className="flex gap-3 pt-4 flex-wrap">
+          <button className="px-6 py-3 bg-orange-600 text-white font-semibold rounded-xl shadow hover:bg-orange-700 transition">
+            Start Adoption Request
+          </button>
+          <Link
+            to="/pets"
+            className="px-6 py-3 bg-gray-800 text-white font-semibold rounded-xl shadow hover:bg-gray-900 transition"
+          >
+            Back to Pets
+          </Link>
+        </div>
+        <p className="text-xs text-gray-900 mt-2">
+          * Demo only. Adoption flow will connect to backend later.
+        </p>
+      </motion.div>
+>>>>>>> f6480e8865b6ac02513109a2920f9d3c409bd9f9
     </motion.section>
   );
 }
